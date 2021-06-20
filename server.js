@@ -7,15 +7,16 @@ const session = require("express-session");
 const passport = require("passport");
 const routes = require("./routes");
 const auth = require("./auth.js");
+const path = require("path");
 
 const app = express();
-app.set("view engine", "pug");
 
-fccTesting(app); // For fCC testing purposes
+fccTesting(app); //For FCC testing purposes
 app.use("/public", express.static(process.cwd() + "/public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "/views/pug"));
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
