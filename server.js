@@ -70,6 +70,15 @@ myDB(async (client) => {
     res.render("profile", { username: req.user.username });
   });
 
+  app.route("/logout").get((req, res) => {
+    req.logout();
+    res.redirect("/");
+  });
+
+  app.use((req, res, next) => {
+    res.status(404).type("text").send("Not Found");
+  });
+
   passport.use(
     new LocalStrategy(function (username, password, done) {
       myDataBase.findOne({ username: username }, function (err, user) {
