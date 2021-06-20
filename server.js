@@ -24,7 +24,9 @@ app.use(
     cookie: { secure: false },
   })
 );
+
 app.use(passport.initialize());
+app.use(passport.session());
 
 app.route("/").get((req, res) => {
   res.render("index", { title: "Hello", message: "Please login" });
