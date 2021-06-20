@@ -14,6 +14,7 @@ $(document).ready(function () {
   $("form").submit(function () {
     let messageToSend = $("#m").val();
     // Send message to server here?
+    socket.emit("chat message", messageToSend);
     $("#m").val("");
     return false; // Prevent form submit from refreshing page
   });
