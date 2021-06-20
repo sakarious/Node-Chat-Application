@@ -8,6 +8,7 @@ const passport = require("passport");
 const session = require("express-session");
 const ObjectID = require("mongodb").ObjectID;
 const LocalStrategy = require("passport-local");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
@@ -78,6 +79,7 @@ myDB(async (client) => {
 
   app.route("/register").post(
     (req, res, next) => {
+      const hash = bcrypt.hashSync(req.body.password, 12);
       myDataBase.findOne({ username: req.body.username }, function (err, user) {
         if (err) {
           next(err);
@@ -85,7 +87,7 @@ myDB(async (client) => {
           res.redirect("/");
         } else {
           myDataBase.insertOne(
-            { username: req.body.username, password: req.body.password },
+            { username: req.body.username, password: hash },
             (err, doc) => {
               if (err) {
                 res.redirect("/");
@@ -107,39 +109,36 @@ myDB(async (client) => {
     res.status(404).type("text").send("Not Found");
   });
 
-  passport.use(
-    new LocalStrategy(function (username, password, done) {
-      myDataBase.findOne({ username: username }, function (err, user) {
-        console.log("User " + username + " attempted to log in.");
-        if (err) {
-          return done(err);
-        }
-        if (!user) {
-          return done(null, false);
-        }
-        if (password !== user.password) {
-          return done(null, false);
-        }
-        return done(null, user);
-      });
-    })
-  );
-
-  // Serialization and deserialization
   passport.serializeUser((user, done) => {
     done(null, user._id);
   });
 
   passport.deserializeUser((id, done) => {
     myDataBase.findOne({ _id: new ObjectID(id) }, (err, doc) => {
+      if (err) return console.error(err);
       done(null, doc);
     });
   });
 
-  // Be sure to add this...
+  passport.use(
+    new LocalStrategy(function (username, password, done) {
+      myDataBase.findOne({ username: username }, function (err, user) {
+        if (err) {
+          return done(err);
+        }
+        if (!user) {
+          return done(null, false);
+        }
+        if (!bcrypt.compareSync(password, user.password)) {
+          return done(null, false);
+        }
+        return done(null, user);
+      });
+    })
+  );
 }).catch((e) => {
   app.route("/").get((req, res) => {
-    res.render("pug", { title: e, message: "Unable to login" });
+    res.render("index", { title: e, message: "Unable to login" });
   });
 });
 
