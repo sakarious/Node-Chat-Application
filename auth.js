@@ -1,8 +1,8 @@
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
-const GitHubStrategy = require("passport-github").Strategy;
 const bcrypt = require("bcrypt");
 const ObjectID = require("mongodb").ObjectID;
+const GitHubStrategy = require("passport-github").Strategy;
 
 module.exports = function (app, myDataBase) {
   passport.serializeUser((user, done) => {
@@ -24,7 +24,7 @@ module.exports = function (app, myDataBase) {
         if (!user) {
           return done(null, false);
         }
-        if (password !== user.password) {
+        if (!bcrypt.compareSync(password, user.password)) {
           return done(null, false);
         }
         return done(null, user);
@@ -38,7 +38,7 @@ module.exports = function (app, myDataBase) {
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackURL:
-          "https://node-chat-application.sakarious.repl.co/auth/github/callback",
+          "https://Node-Chat-Application.sakarious.repl.co/auth/github/callback",
       },
       function (accessToken, refreshToken, profile, cb) {
         console.log(profile);
